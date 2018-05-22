@@ -15,12 +15,10 @@ const Board = props => {
   board.push(<div id={i} className="button-row">{buttonrow}</div>);
 }
 
-    return (
-      <div id="board">
-      {board}
-        <Playback />
-      </div>
-    )
+    return <div id="board">
+        {board}
+        <Playback stopSession={props.stopSession} recordSession={props.recordSession} playSession={props.playSession} />
+      </div>;
   }
 
 export default Board;

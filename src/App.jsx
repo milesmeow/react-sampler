@@ -79,12 +79,25 @@ class App extends React.Component {
         ],
       mapText: '',
       mapMode: false,
-      loopMode: false,
+      loopMode: false
+      }
+
+
+
+    this.recordingSessionData = {
+      isRecording: false, sessions: [{ name: 'sessA', startTime:-Infinity, data: [] }]
     }
+
+
+
+
     this.clickHandler = this.clickHandler.bind(this);
     this.removeTransition = this.removeTransition.bind(this);
     this.addSample = this.addSample.bind(this);
     this.mapSample = this.mapSample.bind(this);
+    this.recordSession = this.recordSession.bind(this);
+    this.stopSession = this.stopSession.bind(this);
+    this.playSession = this.playSession.bind(this);
   }
 
   mapSample(e) {
@@ -102,10 +115,25 @@ class App extends React.Component {
   }
   
   clickHandler(e) {
-    let code = e.target.dataset.key || e.keyCode; //set the code to either the click target or if undefined the keyboard key
+
+    let code = parseInt(e.target.dataset.key) || e.keyCode; //set the code to either the click target or if undefined the keyboard key
     let id = e.target.id;
     let key = document.querySelector(`div[data-key="${code}"]`);
     let audio = document.querySelector(`audio[data-key="${code}"]`);
+    console.log(`e.target.dataset.key ${e.target.dataset.key}`);
+
+    // record session
+    if (this.recordingSessionData.isRecording) {
+      this.recordingSessionData.sessions[0].data.push( e.timeStamp, code);
+    }
+    console.log(this.recordingSessionData.sessions[0].data);
+
+    // if (this.props.recordingSessionData.isRecording) {
+    //   this.props.recordingSessionData.sessions[0].data.push(e.timeStamp, code);
+    // }
+    // console.log(this.props.recordingSessionData.sessions[0].data);
+    // console.log(this.props.recordingSessionData);
+
     if (this.state.mapMode) {
       audio.src = this.state.mapText;
       let buttons = document.getElementsByClassName('button');
@@ -155,6 +183,45 @@ class App extends React.Component {
     e.target.classList.remove('playing');
   };
   
+  recordSession(e) {
+    console.log('recording a session...OVERWRITES the current session');
+    //save the start session timestamp
+    this.recordingSessionData.isRecording = true;
+    this.recordingSessionData.sessions[0].startTime = e.timeStamp;
+    this.recordingSessionData.sessions[0].data = [];
+    console.log(this.recordingSessionData);
+
+    // recordingSessionData.isRecording = true;
+    // recordingSessionData.sessions[0].startTime = e.timeStamp;
+    // recordingSessionData.sessions[0].data = [];
+    // console.log(recordingSessionData);
+
+  }
+
+  stopSession() {
+    console.log('stop recordinng a session');
+    this.recordingSessionData.isRecording = false;
+    console.log(this.recordingSessionData);
+  }
+
+  playSession() {
+    console.log('playing a session...');
+    // settings.dispatchEvent(new KeyboardEvent("keydown", { keyCode: 81 }));
+
+    //
+    // document.querySelector(`audio[data-key="81"]`).play();
+
+    var audioCtx = new AudioContext();
+    let myMediaElement = document.querySelector(`audio[data-key="81"]`);
+    // var source = audioCtx.createMediaElementSource(myMediaElement);
+    // console.log('audioCtx: ', audioCtx);
+    // console.log("source: ", source);
+    
+    myMediaElement.play();
+
+    // document.dispatchEvent(new KeyboardEvent('keyup', { 'key': 'Shift' }));
+  }
+
   render() {
     window.addEventListener('keydown', this.clickHandler);
     return (
@@ -162,7 +229,7 @@ class App extends React.Component {
         <div id="map-mode">
           Map Mode
         </div>
-        <Board keyCodes={this.state.keyCodes} keySymbols={this.state.keySymbols} clickHandler={this.clickHandler} removeTransition={this.removeTransition} audioFiles={this.state.audioFiles}/>
+        <Board keyCodes={this.state.keyCodes} keySymbols={this.state.keySymbols} clickHandler={this.clickHandler} removeTransition={this.removeTransition} audioFiles={this.state.audioFiles} stopSession={this.stopSession} recordSession={this.recordSession} playSession={this.playSession} />
         <VizLib audioFiles={this.state.audioFiles} addSample={this.addSample} mapSample={this.mapSample}/>
         <Settings />
       </div>
